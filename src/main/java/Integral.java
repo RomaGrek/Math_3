@@ -1,21 +1,20 @@
 public class Integral {
     private double leftBoard; // нижняя граница предела
     private double rightBoard; // верхняя граница предела
-    private double eps = 0.0001;
+    public static double eps = 0.0001;
     private int n; // число отрезков - вводит пользователь - от него зависит точность
     private double result;
     private boolean checkSecond = false;
-    private boolean call = false;
+    public static boolean call = false;
     private double i0 = 0;
     private static boolean checkStop = false;
     private double rynge;
     private static double firstResult;
-    public static double secondResult;
     public static double exOne;
-    public static double exTwo;
-    public static double nOne;
-    public static double nTwe;
+    public static int nOne;
     public static boolean s = false;
+    public static double rightZAPAS;
+    public static int nZAPAS;
 
 
     public Integral(double leftBoard, double rightBoard, int n) {
@@ -28,12 +27,12 @@ public class Integral {
 
 
 
-    public static Integral methodSimpson(Integral integral, Function function) {
+    public static void methodSimpson(Integral integral, Function function) {
         if (integral.checkSecond) {
             checkStop = true;
-            double resultOne = methodSimpson(new Integral(integral.leftBoard, 0 - integral.eps, integral.n), function).getResult();
-            double resultTwo = methodSimpson(new Integral(0 + integral.eps, integral.rightBoard, integral.n), function).getResult();
-            integral.setResult(resultOne + resultTwo);
+            rightZAPAS = integral.rightBoard;
+            nZAPAS = integral.n;
+            methodSimpson(new Integral(integral.leftBoard, 0 - 0.0001, integral.n), function);
         }else {
             double h = (integral.rightBoard - integral.leftBoard) / integral.n;
             double sumX_2 = 0d;
@@ -53,10 +52,10 @@ public class Integral {
             double resultRynge = ryhgeMethod(integral.result, integral.i0);
             integral.i0 = integral.result;
             integral.rynge = resultRynge;
-            System.out.println("sss: " + resultRynge);
-            while (resultRynge >= integral.eps) {
+//            System.out.println("sss: " + resultRynge);
+            while (resultRynge >= eps) {
                 integral.n *= 2;
-                integral = methodSimpson(integral, function);
+                methodSimpson(integral, function);
             }
             /* сюда дойдет код когда закончиться рекурсия*/
             if (checkStop) {
@@ -64,18 +63,21 @@ public class Integral {
                     firstResult = integral.result;
                     exOne = integral.rynge;
                     nOne = integral.n;
-
+                    s = true;
+                    methodSimpson(new Integral(0 + eps, rightZAPAS, nZAPAS), function);
+                }else {
+                    integral.result = integral.result + firstResult;
+                    integral.n = integral.n + nOne;
+                    integral.rynge = (integral.rynge + exOne) / 2;
+                    Output.printIntegral(integral);
                 }
             }else {
                 Output.printIntegral(integral);
             }
         }
-        return integral;
     }
     /* i1 текущее - i0 - предыдущее */
     public static double ryhgeMethod(double i1, double i0) {
-        System.out.println("1: " + i1);
-        System.out.println("2: " + i0);
         return Math.abs(i1 - i0) / 15;
     }
 
@@ -87,8 +89,11 @@ public class Integral {
             integral.setCheckSecond(false);
         }else {
             if (integral.getRightBoard() < 0 && integral.getLeftBoard() > 0) {
-                integral.setCall(true);
+                call = true;
                 integral.setCheckSecond(true);
+                double glass = integral.getLeftBoard();
+                integral.setLeftBoard(integral.getRightBoard());
+                integral.setRightBoard(glass);
             }
             if (integral.getRightBoard() > 0 && integral.getLeftBoard() < 0) {
                 integral.setCheckSecond(true);
